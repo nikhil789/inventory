@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registry Office Inventory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .radio-group label {
+            font-weight: normal;
+        }
+        .input-with-buttons {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .input-with-buttons input {
+            flex-grow: 1;
+        }
+        .inc-dec-btn {
+            background-color: #ddd;
+            border: 1px solid #ccc;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .inc-dec-btn:hover {
+            background-color: #ccc;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .add-btn, .download-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+        .add-btn:hover, .download-btn:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: #e53935;
+        }
+        .download-btn-container {
+            text-align: center;
+        }
+        .download-btn {
+            background-color: #2196F3;
+        }
+        .download-btn:hover {
+            background-color: #1e88e5;
+        }
+        .entry-button {
+            border: none;
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .good-btn {
+            background-color: green;
+            color: white;
+        }
+        .partial-btn {
+            background-color: yellow;
+            color: black;
+        }
+        .damaged-btn {
+            background-color: red;
+            color: white;
+        }
+        .binding-btn {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registry Inventory</h1>
+        <div class="form-group">
+            <label for="office">Registry Office:</label>
+            <select id="office">
+                <option value="Bhagalpur">भागलपुर</option>
+                <option value="Bihpur">बिहपुर</option>
+                <option value="Kahalgaon">कहलगांव</option>
+                <option value="Banka">बांका</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Document Type:</label>
+            <div class="radio-group">
+                <input type="radio" id="volume" name="docType" value="Volume" checked>
+                <label for="volume">Volume</label>
+                <input type="radio" id="index" name="docType" value="Index">
+                <label for="index">Index</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="year">Year:</label>
+            <input type="text" id="year" placeholder="e.g., 1990">
+        </div>
+        <div class="form-group">
+            <label for="prep-year">Preparation Year (Optional):</label>
+            <input type="text" id="prep-year" placeholder="e.g., 1995">
+        </div>
+        <div class="form-group">
+            <label id="doc-label" for="doc-value">Volume Numbers:</label>
+            <div class="input-with-buttons">
+                <input type="text" id="doc-value" placeholder="e.g., 1, 2, 3sc">
+                <button class="inc-dec-btn" id="decrease-btn" onclick="incDecNumber(-1)">-</button>
+                <button class="inc-dec-btn" id="increase-btn" onclick="incDecNumber(1)">+</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Present Condition:</label>
+            <div class="radio-group">
+                <div><input type="radio" id="good" name="condition" value="Good" checked>
+                <label for="good">अच्छी स्थिति</label></div>
+                <div><input type="radio" id="partial" name="condition" value="Partial Damage">
+                <label for="partial">आंशिक क्षतिग्रस्त</label></div>
+                <div><input type="radio" id="damaged" name="condition" value="Completely Damaged">
+                <label for="damaged">पूर्ण क्षतिग्रस्त</label></div>
+                <div><input type="radio" id="binding" name="condition" value="Need binding">
+                <label for="binding">जिल्दसाजी आवश्यक</label></div>
+            </div>
+        </div>
+        <div class="button-group">
+            <button class="add-btn" onclick="addEntry()">Add Entry</button>
+        </div>
+    </div>
+
+
+    <div class="download-btn-container container">
+        <button class="download-btn" onclick="downloadData()">Download Data</button>
+    </div>
+
+    <div class="tables-container">
+        <div class="container">
+            <h2>Volumes Inventory</h2>
+            <table id="volume-table">
+                <thead>
+                    <tr>
+                        <th>Office</th>
+                        <th>Year</th>
+                        <th>Volumes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="container">
+            <h2>Indexes Inventory</h2>
+            <table id="index-table">
+                <thead>
+                    <tr>
+                        <th>Office</th>
+                        <th>Year</th>
+                        <th>Indexes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+
+    <script src="xlsx.full.min.js"></script>
+
+    <script>
+        let volumesData = [];
+        let indexesData = [];
+        let lastOffice = document.getElementById('office').value;
+
+        // Event listener for office change
+        document.getElementById('office').addEventListener('change', () => {
+            const currentOffice = document.getElementById('office').value;
+            if (currentOffice !== lastOffice) {
+                document.getElementById('year').value = '';
+                document.getElementById('prep-year').value = '';
+                document.getElementById('doc-value').value = '';
+                lastOffice = currentOffice;
+            }
+        });
+
+        // Update UI based on radio button selection
+        document.querySelectorAll('input[name="docType"]').forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                const label = document.getElementById('doc-label');
+                const docValueInput = document.getElementById('doc-value');
+                const incDecButtons = document.querySelectorAll('.inc-dec-btn');
+                
+                if (event.target.value === 'Volume') {
+                    label.textContent = 'Volume Numbers:';
+                    docValueInput.placeholder = 'e.g., 1, 2, 3sc';
+                    incDecButtons.forEach(btn => btn.style.display = 'inline-block');
+                } else {
+                    label.textContent = 'Index Letters:';
+                    docValueInput.placeholder = 'e.g., A, B, D';
+                    docValueInput.value = docValueInput.value.toUpperCase();
+                    incDecButtons.forEach(btn => btn.style.display = 'none');
+                }
+            });
+        });
+
+        document.getElementById('doc-value').addEventListener('input', (event) => {
+            if (document.getElementById('index').checked) {
+                event.target.value = event.target.value.toUpperCase();
+            }
+        });
+
+        // Increment/Decrement logic for Volume numbers
+        function incDecNumber(change) {
+            const docValueInput = document.getElementById('doc-value');
+            let currentValue = docValueInput.value.trim();
+            
+            if (/^\d+$/.test(currentValue)) {
+                let num = parseInt(currentValue);
+                if (!isNaN(num)) {
+                    num = Math.max(1, num + change);
+                    docValueInput.value = num;
+                }
+            } else if (currentValue === '') {
+                 docValueInput.value = 1;
+            }
+        }
+
+        function addEntry() {
+            const office = document.getElementById('office').value;
+            const docType = document.querySelector('input[name="docType"]:checked').value;
+            const year = document.getElementById('year').value.trim();
+            const prepYear = document.getElementById('prep-year').value.trim();
+            const docValue = document.getElementById('doc-value').value.trim();
+            const condition = document.querySelector('input[name="condition"]:checked').value;
+
+            if (!office || !year || !docValue) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Format the year with preparation year if provided
+            const displayYear = prepYear ? `${year}/${prepYear}` : year;
+            
+            const entries = docValue.split(',').map(item => item.trim());
+
+            if (docType === 'Volume') {
+                mergeEntries(volumesData, office, displayYear, entries, condition);
+                renderTable('volume-table', volumesData, true);
+            } else {
+                mergeEntries(indexesData, office, displayYear, entries, condition);
+                renderTable('index-table', indexesData, false);
+            }
+
+            // Clear the preparation year field for next entry
+            // document.getElementById('prep-year').value = '';
+        }
+
+        function mergeEntries(dataArray, office, year, newEntries, condition) {
+            const existingEntryIndex = dataArray.findIndex(entry => entry.office === office && entry.year === year);
+            
+            if (existingEntryIndex !== -1) {
+                const existingEntry = dataArray[existingEntryIndex];
+                newEntries.forEach(entry => {
+                    const existingValueIndex = existingEntry.values.findIndex(val => val.value === entry);
+                    if (existingValueIndex === -1) {
+                        existingEntry.values.push({ value: entry, condition: condition });
+                    }
+                });
+            } else {
+                const newValues = newEntries.map(entry => ({ value: entry, condition: condition }));
+                dataArray.push({
+                    office: office,
+                    year: year,
+                    values: newValues
+                });
+            }
+        }
+
+        function renderTable(tableId, data, isVolume) {
+            const tableBody = document.querySelector(`#${tableId} tbody`);
+            tableBody.innerHTML = '';
+            data.forEach((entry, mainIndex) => {
+                const row = tableBody.insertRow();
+                const officeCell = row.insertCell(0);
+                const yearCell = row.insertCell(1);
+                const valuesCell = row.insertCell(2);
+                
+                officeCell.textContent = entry.office;
+                yearCell.textContent = entry.year;
+
+                entry.values.forEach((val, subIndex) => {
+                    const btn = document.createElement('button');
+                    btn.textContent = val.value;
+                    btn.className = 'entry-button';
+                    
+                    if (val.condition === 'Good') {
+                        btn.classList.add('good-btn');
+                    } else if (val.condition === 'Partial Damage') {
+                        btn.classList.add('partial-btn');
+                    } else if (val.condition === 'Completely Damaged') {
+                        btn.classList.add('damaged-btn');
+                    } else if (val.condition === 'Need binding') {
+                        btn.classList.add('binding-btn');
+                    }
+                    
+                    btn.onclick = () => deleteEntry(tableId, mainIndex, subIndex);
+                    valuesCell.appendChild(btn);
+                });
+            });
+        }
+
+        function deleteEntry(tableId, mainIndex, subIndex) {
+            const dataArray = tableId === 'volume-table' ? volumesData : indexesData;
+            
+            const confirmDelete = confirm(`Do you want to delete this entry?`);
+            if (confirmDelete) {
+                const entry = dataArray[mainIndex];
+                entry.values.splice(subIndex, 1);
+
+                if (entry.values.length === 0) {
+                    dataArray.splice(mainIndex, 1);
+                }
+                
+                renderTable(tableId, dataArray, tableId === 'volume-table');
+            }
+        }
+        
+        function downloadData() {
+            const filename = prompt("Enter filename (e.g., inventory.xlsx):");
+            if (filename === null || filename.trim() === '') {
+                return;
+            }
+
+            // Create a single array of all entries
+            const allEntries = [];
+            volumesData.forEach(entry => {
+                entry.values.forEach(val => {
+                    // Extract original years for export (separate year and prep year)
+                    const years = entry.year.split('/');
+                    const originalYear = years[0];
+                    const preparationYear = years.length > 1 ? years[1] : '';
+                    
+                    allEntries.push({
+                        "Office": entry.office,
+                        "Year": originalYear,
+                        "Preparation Year": preparationYear,
+                        "Document": val.value,
+                        "Condition": val.condition,
+                        "Type": "Volume"
+                    });
+                });
+            });
+            indexesData.forEach(entry => {
+                entry.values.forEach(val => {
+                    // Extract original years for export (separate year and prep year)
+                    const years = entry.year.split('/');
+                    const originalYear = years[0];
+                    const preparationYear = years.length > 1 ? years[1] : '';
+                    
+                    allEntries.push({
+                        "Office": entry.office,
+                        "Year": originalYear,
+                        "Preparation Year": preparationYear,
+                        "Document": val.value,
+                        "Condition": val.condition,
+                        "Type": "Index"
+                    });
+                });
+            });
+
+            // Convert the array of objects to a worksheet
+            const worksheet = XLSX.utils.json_to_sheet(allEntries);
+
+            // Create a new workbook and add the worksheet
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory Data");
+
+            // Write the workbook and download the file
+            XLSX.writeFile(workbook, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
+        }
+
+        window.addEventListener('beforeunload', function(event) {
+            if (volumesData.length > 0 || indexesData.length > 0) {
+                event.preventDefault();
+                event.returnValue = '';
+                return '';
+            }
+        });
+    </script>
+</body>
+</html>
