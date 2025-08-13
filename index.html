@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registry Inventory Generator</title>
+    <title>Registry Inventory</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -262,14 +262,14 @@
         <div class="form-group">
             <label>Present Condition:</label>
             <div class="radio-group">
-                <input type="radio" id="good" name="condition" value="Good" checked>
-                <label for="good">Good</label>
-                <input type="radio" id="partial" name="condition" value="Partial Damage">
-                <label for="partial">Partial Damage</label>
-                <input type="radio" id="damaged" name="condition" value="Completely Damaged">
-                <label for="damaged">Completely Damaged</label>
-                <input type="radio" id="binding" name="condition" value="Need binding">
-                <label for="binding">Need binding</label>
+                <div><input type="radio" id="good" name="condition" value="Good" checked>
+                <label for="good">Good</label></div>
+                <div><input type="radio" id="partial" name="condition" value="Partial Damage">
+                <label for="partial">Partial Damage</label></div>
+                <div><input type="radio" id="damaged" name="condition" value="Completely Damaged">
+                <label for="damaged">Completely Damaged</label></div>
+                <div><input type="radio" id="binding" name="condition" value="Need binding">
+                <label for="binding">Need binding</label></div>
             </div>
         </div>
         <div class="button-group">
@@ -713,3 +713,4 @@
     </script>
 </body>
 </html>
+
