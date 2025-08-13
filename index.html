@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registry Inventory</title>
+    <title>Registry Inventory Generator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -134,8 +134,7 @@
             margin: 2px;
             cursor: pointer;
             border-radius: 4px;
-            display: block;
-            text-align: center;
+            text-align: left;
             white-space: pre-line;
         }
         .good-btn {
@@ -196,11 +195,15 @@
         .volume-table th {
             background-color: #f2f2f2;
         }
+        /* Style for underlined text (upper level) */
+        .upper-level {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Registry Inventory Generator</h1>
+        <h1>Registry Inventory</h1>
         <div class="form-group">
             <label for="office">Registry Office:</label>
             <select id="office">
@@ -235,7 +238,7 @@
             <div class="form-group">
                 <label id="doc-label" for="doc-value">Volume Numbers:</label>
                 <div class="input-with-buttons">
-                    <input type="text" id="doc-value" placeholder="e.g., 1, 2, 3sc">
+                    <input type="text" id="doc-value" placeholder="e.g., 1, 2, 3sc or 12-17">
                     <button class="inc-dec-btn" id="decrease-btn" onclick="incDecNumber(-1)">-</button>
                     <button class="inc-dec-btn" id="increase-btn" onclick="incDecNumber(1)">+</button>
                 </div>
@@ -262,16 +265,40 @@
         <div class="form-group">
             <label>Present Condition:</label>
             <div class="radio-group">
-                <div><input type="radio" id="good" name="condition" value="Good" checked>
-                <label for="good">Good</label></div>
-                <div><input type="radio" id="partial" name="condition" value="Partial Damage">
-                <label for="partial">Partial Damage</label></div>
-                <div><input type="radio" id="damaged" name="condition" value="Completely Damaged">
-                <label for="damaged">Completely Damaged</label></div>
-                <div><input type="radio" id="binding" name="condition" value="Need binding">
-                <label for="binding">Need binding</label></div>
+                <div>
+                <input type="radio" id="good" name="condition" value="Good" checked>
+                <label for="good">Good</label>
+                </div>
+                <div>
+                <input type="radio" id="partial" name="condition" value="Partial Damage">
+                <label for="partial">Partial Damage</label>
+                </div>
+                <div>
+                <input type="radio" id="damaged" name="condition" value="Completely Damaged">
+                <label for="damaged">Completely Damaged</label>
+                </div>
+                <div>
+                <input type="radio" id="binding" name="condition" value="Need binding">
+                <label for="binding">Need binding</label>
+                </div>
             </div>
         </div>
+        
+        <!-- Location dropdown -->
+        <div class="form-group">
+            <label for="location">Location:</label>
+            <select id="location">
+                <option value="Room 1 - lower level">Room 1 - lower level</option>
+                <option value="Room 1 - upper level">Room 1 - upper level</option>
+                <option value="Room 2 - lower level">Room 2 - lower level</option>
+                <option value="Room 2 - upper level">Room 2 - upper level</option>
+                <option value="Room 3 - lower level">Room 3 - lower level</option>
+                <option value="Room 3 - upper level">Room 3 - upper level</option>
+                <option value="Room 4 - lower level">Room 4 - lower level</option>
+                <option value="Room 4 - upper level">Room 4 - upper level</option>
+            </select>
+        </div>
+        
         <div class="button-group">
             <button class="add-btn" onclick="addEntry()">Add Entry</button>
         </div>
@@ -297,21 +324,6 @@
                 </tbody>
             </table>
         </div>
-
-        <div class="container">
-            <h2>Multiple Volumes Inventory</h2>
-            <table id="multi-table">
-                <thead>
-                    <tr>
-                        <th>Office</th>
-                        <th>Year Group</th>
-                        <th>Volume Set</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
         
         <div class="container">
             <h2>Indexes Inventory</h2>
@@ -328,6 +340,20 @@
             </table>
         </div>
         
+        <div class="container">
+            <h2>Multiple Volumes Inventory</h2>
+            <table id="multi-table">
+                <thead>
+                    <tr>
+                        <th>Office</th>
+                        <th>Year Group</th>
+                        <th>Volume Set</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -357,7 +383,7 @@
                 
                 if (event.target.value === 'Volume') {
                     label.textContent = 'Volume Numbers:';
-                    docValueInput.placeholder = 'e.g., 1, 2, 3sc';
+                    docValueInput.placeholder = 'e.g., 1, 2, 3sc or 12-17';
                     incDecButtons.forEach(btn => btn.style.display = 'inline-block');
                 } else if (event.target.value === 'Index') {
                     label.textContent = 'Index Letters:';
@@ -426,6 +452,7 @@
             const office = document.getElementById('office').value;
             const docType = document.querySelector('input[name="docType"]:checked').value;
             const condition = document.querySelector('input[name="condition"]:checked').value;
+            const location = document.getElementById('location').value;
 
             if (!office) {
                 alert('Please select an office.');
@@ -471,7 +498,8 @@
                     office: office,
                     year: earliestYear,
                     volumes: volumes,
-                    condition: condition
+                    condition: condition,
+                    location: location
                 });
                 
                 renderMultiTable();
@@ -489,19 +517,43 @@
                 
                 // Format the year with preparation year if provided
                 const displayYear = prepYear ? `${year}/${prepYear}` : year;
-                const entries = docValue.split(',').map(item => item.trim());
+                
+                // Process volume ranges (e.g., 12-17 or 12 - 17)
+                let entries = [];
+                if (docType === 'Volume') {
+                    // Check for range pattern (number - number)
+                    const rangeMatch = docValue.match(/(\d+)\s*-\s*(\d+)/);
+                    if (rangeMatch) {
+                        const start = parseInt(rangeMatch[1]);
+                        const end = parseInt(rangeMatch[2]);
+                        if (start <= end) {
+                            for (let i = start; i <= end; i++) {
+                                entries.push(i.toString());
+                            }
+                        } else {
+                            alert('Invalid range: start value should be less than or equal to end value');
+                            return;
+                        }
+                    } else {
+                        // Regular comma-separated values
+                        entries = docValue.split(',').map(item => item.trim()).filter(item => item !== '');
+                    }
+                } else {
+                    // For indexes, just split by comma
+                    entries = docValue.split(',').map(item => item.trim()).filter(item => item !== '');
+                }
 
                 if (docType === 'Volume') {
-                    mergeEntries(volumesData, office, displayYear, entries, condition);
+                    mergeEntries(volumesData, office, displayYear, entries, condition, location);
                     renderTable('volume-table', volumesData, true);
                 } else {
-                    mergeEntries(indexesData, office, displayYear, entries, condition);
+                    mergeEntries(indexesData, office, displayYear, entries, condition, location);
                     renderTable('index-table', indexesData, false);
                 }
             }
         }
 
-        function mergeEntries(dataArray, office, year, newEntries, condition) {
+        function mergeEntries(dataArray, office, year, newEntries, condition, location) {
             const existingEntryIndex = dataArray.findIndex(entry => entry.office === office && entry.year === year);
             
             if (existingEntryIndex !== -1) {
@@ -509,11 +561,19 @@
                 newEntries.forEach(entry => {
                     const existingValueIndex = existingEntry.values.findIndex(val => val.value === entry);
                     if (existingValueIndex === -1) {
-                        existingEntry.values.push({ value: entry, condition: condition });
+                        existingEntry.values.push({ 
+                            value: entry, 
+                            condition: condition,
+                            location: location 
+                        });
                     }
                 });
             } else {
-                const newValues = newEntries.map(entry => ({ value: entry, condition: condition }));
+                const newValues = newEntries.map(entry => ({ 
+                    value: entry, 
+                    condition: condition,
+                    location: location 
+                }));
                 dataArray.push({
                     office: office,
                     year: year,
@@ -549,6 +609,11 @@
                         btn.classList.add('binding-btn');
                     }
                     
+                    // Add underline for upper level locations
+                    if (val.location && val.location.includes('upper level')) {
+                        btn.classList.add('upper-level');
+                    }
+                    
                     btn.onclick = () => deleteEntry(tableId, mainIndex, subIndex);
                     valuesCell.appendChild(btn);
                 });
@@ -579,6 +644,11 @@
                     btn.classList.add('damaged-btn');
                 } else if (entry.condition === 'Need binding') {
                     btn.classList.add('binding-btn');
+                }
+                
+                // Add underline for upper level locations
+                if (entry.location && entry.location.includes('upper level')) {
+                    btn.classList.add('upper-level');
                 }
                 
                 // Create multiline text for the button
@@ -644,7 +714,8 @@
                         "docNumber": val.value,
                         "condition": val.condition,
                         "isSingle": "true",
-                        "bindedWith": ""
+                        "bindedWith": "",
+                        "location": val.location
                     });
                 });
             });
@@ -665,7 +736,8 @@
                         "docNumber": val.value,
                         "condition": val.condition,
                         "isSingle": "true",
-                        "bindedWith": ""
+                        "bindedWith": "",
+                        "location": val.location
                     });
                 });
             });
@@ -684,7 +756,8 @@
                         "volNo": v.vol,
                         "condition": entry.condition,
                         "isSingle": "false",
-                        "bindedWith": bindedWith
+                        "bindedWith": bindedWith,
+                        "location": entry.location
                     });
                 });
             });
@@ -713,4 +786,3 @@
     </script>
 </body>
 </html>
-
