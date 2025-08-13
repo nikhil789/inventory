@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registry Office Inventory</title>
+    <title>Registry Inventory Generator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -117,13 +117,16 @@
             background-color: #e53935;
         }
         .download-btn-container {
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
         }
-        .download-btn {
-            background-color: #2196F3;
+        .download-raw-btn {
+            background-color: #9c27b0;
+            padding: 12px 25px;
         }
-        .download-btn:hover {
-            background-color: #1e88e5;
+        .download-raw-btn:hover {
+            background-color: #8e24aa;
         }
         .entry-button {
             border: none;
@@ -131,6 +134,9 @@
             margin: 2px;
             cursor: pointer;
             border-radius: 4px;
+            display: block;
+            text-align: center;
+            white-space: pre-line;
         }
         .good-btn {
             background-color: green;
@@ -148,18 +154,60 @@
             background-color: #007bff;
             color: white;
         }
+        .multi-volume-container {
+            display: none;
+            margin-top: 15px;
+        }
+        .multi-volume-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .multi-volume-row input {
+            flex-grow: 1;
+        }
+        .add-row-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .remove-row-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .volume-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .volume-table th, .volume-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .volume-table th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Registry Inventory</h1>
+        <h1>Registry Inventory Generator</h1>
         <div class="form-group">
             <label for="office">Registry Office:</label>
             <select id="office">
-                <option value="Bhagalpur">भागलपुर</option>
-                <option value="Bihpur">बिहपुर</option>
-                <option value="Kahalgaon">कहलगांव</option>
-                <option value="Banka">बांका</option>
+                <option value="Bhagalpur">Bhagalpur</option>
+                <option value="Bihpur">Bihpur</option>
+                <option value="Kahalgaon">Kahalgaon</option>
+                <option value="Banka">Banka</option>
             </select>
         </div>
         <div class="form-group">
@@ -167,37 +215,61 @@
             <div class="radio-group">
                 <input type="radio" id="volume" name="docType" value="Volume" checked>
                 <label for="volume">Volume</label>
+                <input type="radio" id="multi-volume" name="docType" value="MultiVolume">
+                <label for="multi-volume">Multiple Volumes</label>
                 <input type="radio" id="index" name="docType" value="Index">
                 <label for="index">Index</label>
             </div>
         </div>
-        <div class="form-group">
-            <label for="year">Year:</label>
-            <input type="text" id="year" placeholder="e.g., 1990">
-        </div>
-        <div class="form-group">
-            <label for="prep-year">Preparation Year (Optional):</label>
-            <input type="text" id="prep-year" placeholder="e.g., 1995">
-        </div>
-        <div class="form-group">
-            <label id="doc-label" for="doc-value">Volume Numbers:</label>
-            <div class="input-with-buttons">
-                <input type="text" id="doc-value" placeholder="e.g., 1, 2, 3sc">
-                <button class="inc-dec-btn" id="decrease-btn" onclick="incDecNumber(-1)">-</button>
-                <button class="inc-dec-btn" id="increase-btn" onclick="incDecNumber(1)">+</button>
+        
+        <!-- Regular Volume/Index inputs -->
+        <div id="regular-inputs">
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <input type="text" id="year" placeholder="e.g., 1990">
+            </div>
+            <div class="form-group">
+                <label for="prep-year">Preparation Year (Optional):</label>
+                <input type="text" id="prep-year" placeholder="e.g., 1995">
+            </div>
+            <div class="form-group">
+                <label id="doc-label" for="doc-value">Volume Numbers:</label>
+                <div class="input-with-buttons">
+                    <input type="text" id="doc-value" placeholder="e.g., 1, 2, 3sc">
+                    <button class="inc-dec-btn" id="decrease-btn" onclick="incDecNumber(-1)">-</button>
+                    <button class="inc-dec-btn" id="increase-btn" onclick="incDecNumber(1)">+</button>
+                </div>
             </div>
         </div>
+        
+        <!-- Multiple Volume inputs -->
+        <div id="multi-volume-inputs" class="multi-volume-container">
+            <div id="multi-volume-rows">
+                <div class="multi-volume-row">
+                    <input type="text" class="multi-year" placeholder="Year">
+                    <input type="text" class="multi-vol" placeholder="Volume Number">
+                    <button class="remove-row-btn" onclick="removeRow(this)" disabled>×</button>
+                </div>
+                <div class="multi-volume-row">
+                    <input type="text" class="multi-year" placeholder="Year">
+                    <input type="text" class="multi-vol" placeholder="Volume Number">
+                    <button class="remove-row-btn" onclick="removeRow(this)">×</button>
+                </div>
+            </div>
+            <button class="add-row-btn" onclick="addMultiVolumeRow()">+ Add Another Volume</button>
+        </div>
+        
         <div class="form-group">
             <label>Present Condition:</label>
             <div class="radio-group">
-                <div><input type="radio" id="good" name="condition" value="Good" checked>
-                <label for="good">अच्छी स्थिति</label></div>
-                <div><input type="radio" id="partial" name="condition" value="Partial Damage">
-                <label for="partial">आंशिक क्षतिग्रस्त</label></div>
-                <div><input type="radio" id="damaged" name="condition" value="Completely Damaged">
-                <label for="damaged">पूर्ण क्षतिग्रस्त</label></div>
-                <div><input type="radio" id="binding" name="condition" value="Need binding">
-                <label for="binding">जिल्दसाजी आवश्यक</label></div>
+                <input type="radio" id="good" name="condition" value="Good" checked>
+                <label for="good">Good</label>
+                <input type="radio" id="partial" name="condition" value="Partial Damage">
+                <label for="partial">Partial Damage</label>
+                <input type="radio" id="damaged" name="condition" value="Completely Damaged">
+                <label for="damaged">Completely Damaged</label>
+                <input type="radio" id="binding" name="condition" value="Need binding">
+                <label for="binding">Need binding</label>
             </div>
         </div>
         <div class="button-group">
@@ -205,9 +277,9 @@
         </div>
     </div>
 
-
-    <div class="download-btn-container container">
-        <button class="download-btn" onclick="downloadData()">Download Data</button>
+    <!-- Download button above the tables -->
+    <div class="download-btn-container">
+        <button class="download-btn download-raw-btn" onclick="downloadRawData()">Download Raw Data (JSON)</button>
     </div>
 
     <div class="tables-container">
@@ -219,6 +291,21 @@
                         <th>Office</th>
                         <th>Year</th>
                         <th>Volumes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container">
+            <h2>Multiple Volumes Inventory</h2>
+            <table id="multi-table">
+                <thead>
+                    <tr>
+                        <th>Office</th>
+                        <th>Year Group</th>
+                        <th>Volume Set</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -240,15 +327,46 @@
                 </tbody>
             </table>
         </div>
+        
     </div>
-    
-
-    <script src="xlsx.full.min.js"></script>
 
     <script>
         let volumesData = [];
         let indexesData = [];
+        let multiVolumesData = [];
         let lastOffice = document.getElementById('office').value;
+
+        // Show/hide appropriate input fields based on document type
+        document.querySelectorAll('input[name="docType"]').forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                const regularInputs = document.getElementById('regular-inputs');
+                const multiVolumeInputs = document.getElementById('multi-volume-inputs');
+                
+                if (event.target.value === 'MultiVolume') {
+                    regularInputs.style.display = 'none';
+                    multiVolumeInputs.style.display = 'block';
+                } else {
+                    regularInputs.style.display = 'block';
+                    multiVolumeInputs.style.display = 'none';
+                }
+                
+                // Update label and input behavior
+                const label = document.getElementById('doc-label');
+                const docValueInput = document.getElementById('doc-value');
+                const incDecButtons = document.querySelectorAll('.inc-dec-btn');
+                
+                if (event.target.value === 'Volume') {
+                    label.textContent = 'Volume Numbers:';
+                    docValueInput.placeholder = 'e.g., 1, 2, 3sc';
+                    incDecButtons.forEach(btn => btn.style.display = 'inline-block');
+                } else if (event.target.value === 'Index') {
+                    label.textContent = 'Index Letters:';
+                    docValueInput.placeholder = 'e.g., A, B, D';
+                    docValueInput.value = docValueInput.value.toUpperCase();
+                    incDecButtons.forEach(btn => btn.style.display = 'none');
+                }
+            });
+        });
 
         // Event listener for office change
         document.getElementById('office').addEventListener('change', () => {
@@ -259,26 +377,6 @@
                 document.getElementById('doc-value').value = '';
                 lastOffice = currentOffice;
             }
-        });
-
-        // Update UI based on radio button selection
-        document.querySelectorAll('input[name="docType"]').forEach(radio => {
-            radio.addEventListener('change', (event) => {
-                const label = document.getElementById('doc-label');
-                const docValueInput = document.getElementById('doc-value');
-                const incDecButtons = document.querySelectorAll('.inc-dec-btn');
-                
-                if (event.target.value === 'Volume') {
-                    label.textContent = 'Volume Numbers:';
-                    docValueInput.placeholder = 'e.g., 1, 2, 3sc';
-                    incDecButtons.forEach(btn => btn.style.display = 'inline-block');
-                } else {
-                    label.textContent = 'Index Letters:';
-                    docValueInput.placeholder = 'e.g., A, B, D';
-                    docValueInput.value = docValueInput.value.toUpperCase();
-                    incDecButtons.forEach(btn => btn.style.display = 'none');
-                }
-            });
         });
 
         document.getElementById('doc-value').addEventListener('input', (event) => {
@@ -303,34 +401,104 @@
             }
         }
 
+        // Multi-volume functions
+        function addMultiVolumeRow() {
+            const container = document.getElementById('multi-volume-rows');
+            const newRow = document.createElement('div');
+            newRow.className = 'multi-volume-row';
+            newRow.innerHTML = `
+                <input type="text" class="multi-year" placeholder="Year">
+                <input type="text" class="multi-vol" placeholder="Volume Number">
+                <button class="remove-row-btn" onclick="removeRow(this)">×</button>
+            `;
+            container.appendChild(newRow);
+        }
+
+        function removeRow(button) {
+            const row = button.parentNode;
+            const container = document.getElementById('multi-volume-rows');
+            if (container.children.length > 2) {
+                container.removeChild(row);
+            }
+        }
+
         function addEntry() {
             const office = document.getElementById('office').value;
             const docType = document.querySelector('input[name="docType"]:checked').value;
-            const year = document.getElementById('year').value.trim();
-            const prepYear = document.getElementById('prep-year').value.trim();
-            const docValue = document.getElementById('doc-value').value.trim();
             const condition = document.querySelector('input[name="condition"]:checked').value;
 
-            if (!office || !year || !docValue) {
-                alert('Please fill in all required fields.');
+            if (!office) {
+                alert('Please select an office.');
                 return;
             }
-            
-            // Format the year with preparation year if provided
-            const displayYear = prepYear ? `${year}/${prepYear}` : year;
-            
-            const entries = docValue.split(',').map(item => item.trim());
 
-            if (docType === 'Volume') {
-                mergeEntries(volumesData, office, displayYear, entries, condition);
-                renderTable('volume-table', volumesData, true);
+            if (docType === 'MultiVolume') {
+                // Handle multiple volumes
+                const yearInputs = document.querySelectorAll('.multi-year');
+                const volInputs = document.querySelectorAll('.multi-vol');
+                
+                const volumes = [];
+                let hasEmpty = false;
+                
+                for (let i = 0; i < yearInputs.length; i++) {
+                    const year = yearInputs[i].value.trim();
+                    const vol = volInputs[i].value.trim();
+                    
+                    if (!year || !vol) {
+                        hasEmpty = true;
+                        continue;
+                    }
+                    
+                    volumes.push({ year, vol });
+                }
+                
+                if (hasEmpty) {
+                    alert('Please fill in all year and volume fields for multiple volumes.');
+                    return;
+                }
+                
+                if (volumes.length === 0) {
+                    alert('Please add at least one volume.');
+                    return;
+                }
+                
+                // Sort by year to find the earliest year
+                volumes.sort((a, b) => parseInt(a.year) - parseInt(b.year));
+                const earliestYear = volumes[0].year;
+                
+                // Add to multiVolumesData
+                multiVolumesData.push({
+                    office: office,
+                    year: earliestYear,
+                    volumes: volumes,
+                    condition: condition
+                });
+                
+                renderMultiTable();
+                
             } else {
-                mergeEntries(indexesData, office, displayYear, entries, condition);
-                renderTable('index-table', indexesData, false);
-            }
+                // Handle regular volume or index
+                const year = document.getElementById('year').value.trim();
+                const prepYear = document.getElementById('prep-year').value.trim();
+                const docValue = document.getElementById('doc-value').value.trim();
 
-            // Clear the preparation year field for next entry
-            // document.getElementById('prep-year').value = '';
+                if (!year || !docValue) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+                
+                // Format the year with preparation year if provided
+                const displayYear = prepYear ? `${year}/${prepYear}` : year;
+                const entries = docValue.split(',').map(item => item.trim());
+
+                if (docType === 'Volume') {
+                    mergeEntries(volumesData, office, displayYear, entries, condition);
+                    renderTable('volume-table', volumesData, true);
+                } else {
+                    mergeEntries(indexesData, office, displayYear, entries, condition);
+                    renderTable('index-table', indexesData, false);
+                }
+            }
         }
 
         function mergeEntries(dataArray, office, year, newEntries, condition) {
@@ -387,8 +555,50 @@
             });
         }
 
+        function renderMultiTable() {
+            const tableBody = document.querySelector('#multi-table tbody');
+            tableBody.innerHTML = '';
+            
+            multiVolumesData.forEach((entry, index) => {
+                const row = tableBody.insertRow();
+                const officeCell = row.insertCell(0);
+                const yearCell = row.insertCell(1);
+                const valuesCell = row.insertCell(2);
+                
+                officeCell.textContent = entry.office;
+                yearCell.textContent = entry.year;
+                
+                const btn = document.createElement('button');
+                btn.className = 'entry-button';
+                
+                if (entry.condition === 'Good') {
+                    btn.classList.add('good-btn');
+                } else if (entry.condition === 'Partial Damage') {
+                    btn.classList.add('partial-btn');
+                } else if (entry.condition === 'Completely Damaged') {
+                    btn.classList.add('damaged-btn');
+                } else if (entry.condition === 'Need binding') {
+                    btn.classList.add('binding-btn');
+                }
+                
+                // Create multiline text for the button
+                let buttonText = '';
+                entry.volumes.forEach((v, idx) => {
+                    buttonText += `${v.year}-${v.vol}`;
+                    if (idx < entry.volumes.length - 1) buttonText += '\n';
+                });
+                btn.textContent = buttonText;
+                
+                btn.onclick = () => deleteMultiEntry(index);
+                valuesCell.appendChild(btn);
+            });
+        }
+
         function deleteEntry(tableId, mainIndex, subIndex) {
-            const dataArray = tableId === 'volume-table' ? volumesData : indexesData;
+            const dataArray = tableId === 'volume-table' ? volumesData : 
+                            tableId === 'index-table' ? indexesData : null;
+            
+            if (!dataArray) return;
             
             const confirmDelete = confirm(`Do you want to delete this entry?`);
             if (confirmDelete) {
@@ -403,62 +613,98 @@
             }
         }
         
-        function downloadData() {
-            const filename = prompt("Enter filename (e.g., inventory.xlsx):");
-            if (filename === null || filename.trim() === '') {
-                return;
+        function deleteMultiEntry(index) {
+            const confirmDelete = confirm(`Do you want to delete this multi-volume entry?`);
+            if (confirmDelete) {
+                multiVolumesData.splice(index, 1);
+                renderMultiTable();
             }
-
-            // Create a single array of all entries
-            const allEntries = [];
+        }
+        
+        function downloadRawData() {
+            const filename = prompt("Enter filename for JSON data (e.g., inventory.json):", "raw-data.json");
+            if (!filename) return;
+            
+            // Prepare data for JSON export
+            const jsonData = [];
+            
+            // Add volumes data
             volumesData.forEach(entry => {
                 entry.values.forEach(val => {
-                    // Extract original years for export (separate year and prep year)
-                    const years = entry.year.split('/');
-                    const originalYear = years[0];
-                    const preparationYear = years.length > 1 ? years[1] : '';
+                    // Extract year and preparation year
+                    const yearParts = entry.year.split('/');
+                    const originalYear = yearParts[0];
+                    const preparationYear = yearParts.length > 1 ? yearParts[1] : '';
                     
-                    allEntries.push({
-                        "Office": entry.office,
-                        "Year": originalYear,
-                        "Preparation Year": preparationYear,
-                        "Document": val.value,
-                        "Condition": val.condition,
-                        "Type": "Volume"
+                    jsonData.push({
+                        "office": entry.office,
+                        "year": originalYear,
+                        "preparationYear": preparationYear,
+                        "docType": "Volume",
+                        "docNumber": val.value,
+                        "condition": val.condition,
+                        "isSingle": "true",
+                        "bindedWith": ""
                     });
                 });
             });
+            
+            // Add indexes data
             indexesData.forEach(entry => {
                 entry.values.forEach(val => {
-                    // Extract original years for export (separate year and prep year)
-                    const years = entry.year.split('/');
-                    const originalYear = years[0];
-                    const preparationYear = years.length > 1 ? years[1] : '';
+                    // Extract year and preparation year
+                    const yearParts = entry.year.split('/');
+                    const originalYear = yearParts[0];
+                    const preparationYear = yearParts.length > 1 ? yearParts[1] : '';
                     
-                    allEntries.push({
-                        "Office": entry.office,
-                        "Year": originalYear,
-                        "Preparation Year": preparationYear,
-                        "Document": val.value,
-                        "Condition": val.condition,
-                        "Type": "Index"
+                    jsonData.push({
+                        "office": entry.office,
+                        "year": originalYear,
+                        "preparationYear": preparationYear,
+                        "docType": "Index",
+                        "docNumber": val.value,
+                        "condition": val.condition,
+                        "isSingle": "true",
+                        "bindedWith": ""
                     });
                 });
             });
-
-            // Convert the array of objects to a worksheet
-            const worksheet = XLSX.utils.json_to_sheet(allEntries);
-
-            // Create a new workbook and add the worksheet
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory Data");
-
-            // Write the workbook and download the file
-            XLSX.writeFile(workbook, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
+            
+            // Add multi-volume data
+            multiVolumesData.forEach(entry => {
+                entry.volumes.forEach(v => {
+                    const bindedWith = entry.volumes
+                        .filter(other => other !== v)
+                        .map(other => `${entry.office}-${other.year}-${other.vol}`)
+                        .join('|');
+                    
+                    jsonData.push({
+                        "office": entry.office,
+                        "year": v.year,
+                        "volNo": v.vol,
+                        "condition": entry.condition,
+                        "isSingle": "false",
+                        "bindedWith": bindedWith
+                    });
+                });
+            });
+            
+            // Create and download JSON file
+            const jsonString = JSON.stringify(jsonData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename.endsWith('.json') ? filename : `${filename}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         window.addEventListener('beforeunload', function(event) {
-            if (volumesData.length > 0 || indexesData.length > 0) {
+            if (volumesData.length > 0 || indexesData.length > 0 || multiVolumesData.length > 0) {
                 event.preventDefault();
                 event.returnValue = '';
                 return '';
