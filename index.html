@@ -912,7 +912,10 @@
 
         // Expose storeInDatabase to global scope so HTML button can call it
         window.storeInDatabase = storeInDatabase;
-        
+        window.addEntry = addEntry;
+        window.incDecNumber = incDecNumber;
+        window.removeRow = removeRow;
+        window.addMultiVolumeRow = addMultiVolumeRow;
         window.addEventListener('beforeunload', function(event) {
             if (volumesData.length > 0 || indexesData.length > 0 || multiVolumesData.length > 0) {
                 event.preventDefault();
@@ -923,5 +926,6 @@
     </script>
 </body>
 </html>
+
 
 
