@@ -306,7 +306,7 @@
 
     <!-- Download button above the tables -->
     <div class="download-btn-container">
-        <button class="download-btn download-raw-btn" onclick="downloadRawData()">Download Raw Data (JSON)</button>
+        <button class="download-btn download-raw-btn" onclick="downloadRawData()">Download Raw Data (JSON)</button><br/>
         <button class="download-btn" style="background-color: #2196F3;" onclick="storeInDatabase()">Store in Database</button>
     </div>
 
@@ -360,7 +360,7 @@
     <script type="module">
          // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+        import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -922,6 +922,7 @@
     </script>
 </body>
 </html>
+
 
 
 
