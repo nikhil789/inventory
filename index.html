@@ -800,113 +800,109 @@
 
         // === NEW FUNCTION: Store in Firebase ===
         async function storeInDatabase() {
-            if (!confirm("Are you sure you want to upload the current inventory to the database? This will overwrite existing data.")) {
+            if (!confirm("Are you sure you want to upload new entries to the database?")) {
                 return;
             }
-
-            // Get raw data (same logic as downloadRawData)
+        
+            const shortForms = {
+                "Bhagalpur": "bgp",
+                "Bihpur": "bih",
+                "Kahalgaon": "kl",
+                "Banka": "bnk"
+            };
+        
+            // Extract data (same as before)
             const jsonData = [];
-
+        
             volumesData.forEach(entry => {
                 entry.values.forEach(val => {
                     const yearParts = entry.year.split('/');
                     const originalYear = yearParts[0];
                     const preparationYear = yearParts.length > 1 ? yearParts[1] : '';
-
+        
                     jsonData.push({
-                        "office": entry.office,
-                        "year": originalYear,
-                        "preparationYear": preparationYear,
-                        "docType": "Volume",
-                        "docNumber": val.value,
-                        "condition": val.condition,
-                        "isSingle": "true",
-                        "bindedWith": "",
-                        "location": val.location
+                        office: entry.office,
+                        year: originalYear,
+                        preparationYear: preparationYear,
+                        docType: "Volume",
+                        docNumber: val.value,
+                        condition: val.condition,
+                        isSingle: "true",
+                        bindedWith: "",
+                        location: val.location
                     });
                 });
             });
-
+        
             indexesData.forEach(entry => {
                 entry.values.forEach(val => {
                     const yearParts = entry.year.split('/');
                     const originalYear = yearParts[0];
                     const preparationYear = yearParts.length > 1 ? yearParts[1] : '';
-
+        
                     jsonData.push({
-                        "office": entry.office,
-                        "year": originalYear,
-                        "preparationYear": preparationYear,
-                        "docType": "Index",
-                        "docNumber": val.value,
-                        "condition": val.condition,
-                        "isSingle": "true",
-                        "bindedWith": "",
-                        "location": val.location
+                        office: entry.office,
+                        year: originalYear,
+                        preparationYear: preparationYear,
+                        docType: "Index",
+                        docNumber: val.value,
+                        condition: val.condition,
+                        isSingle: "true",
+                        bindedWith: "",
+                        location: val.location
                     });
                 });
             });
-
+        
             multiVolumesData.forEach(entry => {
                 entry.volumes.forEach(v => {
                     const bindedWith = entry.volumes
                         .filter(other => other !== v)
                         .map(other => `${entry.office}-${other.year}-${other.vol}`)
                         .join('|');
-
+        
                     jsonData.push({
-                        "office": entry.office,
-                        "year": v.year,
-                        "volNo": v.vol,
-                        "condition": entry.condition,
-                        "isSingle": "false",
-                        "bindedWith": bindedWith,
-                        "location": entry.location
+                        office: entry.office,
+                        year: v.year,
+                        volNo: v.vol,
+                        condition: entry.condition,
+                        isSingle: "false",
+                        bindedWith: bindedWith,
+                        location: entry.location
                     });
                 });
             });
-
-            // Transform flat array to nested structure: { Office: { Year: [ ... ] } }
-            const transformedData = {
-                "Bhagalpur": {},
-                "Bihpur": {},
-                "Kahalgaon": {},
-                "Banka": {}
-            };
-
+        
+            // Transform to object with composite keys
+            const updates = {};
+            
             jsonData.forEach(item => {
-                const office = item.office;
-                const year = item.year;
-
-                if (!transformedData[office]) {
-                    transformedData[office] = {};
-                }
-                if (!transformedData[office][year]) {
-                    transformedData[office][year] = [];
-                }
-
-                // Map common fields
-                const entry = {
-                    preparationYear: item.preparationYear || "",
+                const officeShort = shortForms[item.office];
+                const prepYearPart = item.preparationYear ? `/${item.preparationYear}` : "";
+                const docNumber = item.docNumber || item.volNo;
+                const key = `${officeShort}-${item.year}${prepYearPart}-${docNumber}`;
+                
+                updates[key] = {
+                    office: item.office,
+                    year: item.year,
+                    preparationYear: item.preparationYear,
                     docType: item.docType || "Volume",
-                    docNumber: item.docNumber || item.volNo,
+                    docNumber: docNumber,
                     condition: item.condition,
                     isSingle: item.isSingle,
                     bindedWith: item.bindedWith,
                     location: item.location
                 };
-
-                transformedData[office][year].push(entry);
             });
-
-            // Upload to Firebase with progress feedback
+        
+            // ✅ NO READ REQUIRED — Just update with new entries
             try {
-                alert("Uploading data to Firebase... Please wait.");
-                await set(dataRef, transformedData);
-                alert(`✅ Successfully uploaded ${jsonData.length} entries to Firebase!`);
+                alert(`Uploading ${Object.keys(updates).length} entries...`);
+                await update(ref(db, 'ALL_COLLECTION'), updates);
+                alert(`✅ Successfully uploaded ${Object.keys(updates).length} entries!`);
             } catch (error) {
-                console.error("Error uploading to Firebase:", error);
-                alert(`❌ Failed to upload  ${error.message}`);
+                console.error("Error uploading: ", error);
+                alert(`❌ Upload failed: ${error.message}`);
             }
         }
 
@@ -926,6 +922,7 @@
     </script>
 </body>
 </html>
+
 
 
 
