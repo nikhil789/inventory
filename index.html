@@ -860,7 +860,7 @@
                         .filter(other => other !== v)
                         .map(other => `${entry.office}-${other.year}-${other.vol}`)
                         .join('|');
-        
+                    
                     jsonData.push({
                         office: entry.office,
                         year: v.year,
@@ -885,7 +885,7 @@
                 updates[key] = {
                     office: item.office,
                     year: item.year,
-                    preparationYear: item.preparationYear,
+                    preparationYear: prepYearPart,
                     docType: item.docType || "Volume",
                     docNumber: docNumber,
                     condition: item.condition,
@@ -921,6 +921,7 @@
     </script>
 </body>
 </html>
+
 
 
 
