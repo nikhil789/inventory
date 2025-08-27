@@ -309,7 +309,7 @@
         <button class="download-btn download-raw-btn" onclick="downloadRawData()">Download Raw Data (JSON)</button><br/>
         <button class="download-btn" style="background-color: #2196F3;" onclick="storeInDatabase()">Store in Database</button>
     </div>
-
+    <div id="summary"></div>
     <div class="tables-container">
         <div class="container">
             <h2>Volumes Inventory</h2>
@@ -360,7 +360,7 @@
     <script type="module">
          // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-        import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+        import { getDatabase, ref, set, update, get } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -905,6 +905,50 @@
                 alert(`❌ Upload failed: ${error.message}`);
             }
         }
+
+        async function getCount() {
+          const summaryDiv = document.getElementById('summary');
+          summaryDiv.innerHTML = 'Loading data...';
+
+          try {
+            const dbRef = ref(db, 'ALL_COLLECTION');
+            const snapshot = await get(dbRef);
+
+            if (!snapshot.exists()) {
+              summaryDiv.innerHTML = '❌ No data found in the database.';
+              return;
+            }
+
+            const data = snapshot.val();
+            let total = 0;
+            let volumes = 0;
+            let indexes = 0;
+
+            for (const key in data) {
+              const item = data[key];
+              if (!item || !item.docType) continue;
+
+              total++;
+              if (item.docType === "Volume") {
+                volumes++;
+              } else if (item.docType === "Index") {
+                indexes++;
+              }
+            }
+
+            summaryDiv.innerHTML = `
+              <strong>Inventory Summary:</strong><br>
+                Total Entries: <strong>${total}</strong><br>
+              Volumes: <strong>${volumes}</strong><br>
+              Indexes: <strong>${indexes}</strong>
+            `;
+          } catch (error) {
+            console.error("Error reading  ", error);
+            summaryDiv.innerHTML = `❌ Failed to read  ${error.message}`;
+          }
+        }
+
+        getCount();
         // Expose storeInDatabase to global scope so HTML button can call it
         window.storeInDatabase = storeInDatabase;
         window.addEntry = addEntry;
@@ -921,6 +965,7 @@
     </script>
 </body>
 </html>
+
 
 
 
